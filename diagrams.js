@@ -292,6 +292,29 @@ linear:S('0 0 560 290',`
   ${A(180,43,220,43)}${B(222,22,320,44,'Linear · 512 → vocab size','pen','sm')}
   ${A(380,66,380,92)}${B(260,94,240,38,'Softmax','hot','sm')}
   ${[['<SOS>',0],['हम',.7],['दोस्त',.2],['हैं',.1]].map(([w,p],i)=>`${TL(20,160+i*30,w,'sm')}<rect class="bar ${i===1?'':'soft'}" x="110" y="${149+i*30}" width="${Math.max(3,p*330)}" height="22" rx="4"/>${TL(120+Math.max(3,p*330),160+i*30,p.toFixed(1),'svg-mono')}`).join('')}
-  ${T(470,190,'actual: हम\nloss compares\nthe two','sm red')}`,'Linear and softmax output')
+  ${T(470,190,'actual: हम\nloss compares\nthe two','sm red')}`,'Linear and softmax output'),
+
+scratch:(()=>{const xs=[20,155,290,425],W=[.40,.25,.20,.15];return S('0 0 560 330',`
+  ${xs.map((x,j)=>B(x,14,118,40,`v₁·v${'₁₂₃₄'[j]} = A₁${'₁₂₃₄'[j]}`,'','sm')+A(x+59,54,x+59,82)).join('')}
+  ${B(20,84,523,36,'softmax (normalization) · weights add up to 1','hot','sm')}
+  ${xs.map((x,j)=>A(x+59,120,x+59,146)+B(x,148,118,40,`S₁${'₁₂₃₄'[j]} = ${W[j].toFixed(2)}`,'pen','sm')+T(x+59,212,`× v${'₁₂₃₄'[j]}`,'sm red')+P(`M${x+59} 226 L${x+59} 246 L281 268`)).join('')}
+  ${B(176,270,210,42,'y₁ = Σ S₁ⱼ · vⱼ','hot','sm')}
+  ${T(470,300,'repeat for y₂, y₃, y₄','sm muted')}`,'Self-attention without weights')})(),
+
+trainable:S('0 0 560 310',`
+  ${B(10,30,64,250,'v₁\nv₂\nv₃\n⋮\nvₙ')}
+  ${B(110,30,120,48,'Linear\nkeys','pen','sm')}${B(110,110,120,48,'Linear\nqueries','pen','sm')}${B(110,222,120,48,'Linear\nvalues','red','sm')}
+  ${A(74,60,108,54)}${A(74,134,108,134)}${A(74,246,108,246)}
+  ${B(262,70,96,44,'MatMul','','sm')}${A(230,54,260,82)}${A(230,134,260,102)}
+  ${B(392,70,96,44,'Norm','hot','sm')}${A(358,92,390,92)}${T(375,60,'[Aᵢⱼ]','sm muted')}
+  ${B(392,222,96,48,'MatMul','','sm')}${A(440,114,440,220)}${T(470,168,'[Sᵢⱼ]','sm muted')}${A(230,246,390,246,'red')}
+  ${B(510,30,44,250,'y₁\ny₂\ny₃\n⋮\nyₙ','hot')}${A(488,246,508,246)}
+  ${T(300,296,'the three Linear layers hold W_K, W_Q, W_V','sm red')}`,'Trainable self-attention block'),
+
+kvcache:S('0 0 560 300',`
+  ${B(10,116,150,60,'Encoder\nK, V computed once','pen','sm')}${A(160,146,196,146)}
+  ${B(198,116,150,60,'KV cache\nsaved, reused','hot','sm')}
+  ${[0,1,2].map(i=>`${B(392,24+i*92,158,52,'step '+(i+1)+': new Q','red','sm')}${P(`M348 146 Q370 146 390 ${50+i*92}`,'pen')}`).join('')}
+  ${T(470,296,'Q is always recomputed','sm red')}${T(270,220,'no need to recompute\nK, V each step','sm muted')}`,'KV cache during inference')
 };
 

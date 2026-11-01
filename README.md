@@ -10,12 +10,12 @@ My notes on **"Attention Is All You Need"** (Vaswani et al., 2017), turned into 
 |---|---|
 | Foundations | What an LLM is, RNN → LSTM → Transformer, why LSTMs could not scale, training vs inference |
 | Input | Tokenization, embeddings (512-d, trainable), concat vs add, positional encoding with sin/cos and a worked example |
-| Attention | Self-attention, Q / K / V, shapes (d_k = 64), scaled dot-product, √d_k, multi-head attention and W_O |
+| Attention | Self-attention by hand, making it trainable, Q / K / V, shapes (d_k = 64), scaled dot-product, √d_k, multi-head attention and W_O |
 | Encoder block | Residual connections, Add & LayerNorm (γ, β), feed-forward network 512 → 2048 → 512 |
-| Decoder | Machine translation, autoregressive inference, shifted right, masked self-attention, cross-attention, Linear + softmax |
+| Decoder | Machine translation, autoregressive inference, shifted right, masked self-attention, cross-attention, KV cache, Linear + softmax |
 | Architecture | Full encoder–decoder picture, why 6 layers, encoder-only vs decoder-only models |
 
-46 slides in total. The handwritten source pages are in [`notes/`](notes/).
+50 slides in total. The handwritten source pages are in [`notes/`](notes/).
 
 ## Controls
 

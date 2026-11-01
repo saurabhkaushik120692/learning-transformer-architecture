@@ -121,6 +121,38 @@ a + b                    # [6 8 10]       length 3`},
   points:['S1: <code>bank = w1·money + w2·bank + w3·grows</code>','S2: <code>bank = w1·river + w2·bank + w3·flows</code>','Calculating those weights is exactly what self-attention does.'],
   note:'Line thickness = weight. Example weights, the model learns the real ones.'},
 
+ {section:'Attention',kicker:'self-attention by hand',title:'Four vectors, no weights yet',visual:DIA.scratch,
+  points:['Take 4 vectors <code>v₁ v₂ v₃ v₄</code>. Dot products give raw scores: <code>v₁·v₁ = A₁₁</code> … <code>v₁·v₄ = A₁₄</code>.','<b>Normalize</b> with softmax: <code>A₁ⱼ → S₁ⱼ</code>, and the S values add up to 1.','Weighted sum: <code>y₁ = S₁₁v₁ + S₁₂v₂ + S₁₃v₃ + S₁₄v₄</code>. y₁ is the <b>contextualized vector</b>.','Repeat with v₂ (A₂₁ … A₂₄) for y₂, then y₃, y₄.'],
+  code:`import numpy as np
+
+def softmax(x):
+    e = np.exp(x - x.max(axis=-1, keepdims=True))
+    return e / e.sum(axis=-1, keepdims=True)
+
+V = np.random.randn(4, 8)      # v1..v4, 8-d each
+
+A = V @ V.T                    # A[i, j] = v_i . v_j
+S = softmax(A)                 # normalize each row -> sums to 1
+Y = S @ V                      # y_i = sum_j S[i, j] * v_j
+
+print(S.sum(axis=1))           # [1. 1. 1. 1.]`},
+
+ {section:'Attention',kicker:'what is missing',title:'Make the system trainable',visual:DIA.trainable,
+  points:['The by-hand version has four limits: <b>no trained weights</b>, order has no influence, proximity has no influence, and it does not depend on shape.','Fix: give each role its own learnable matrix. <b>Keys</b> <code>vⱼ·M_K</code>, <b>query</b> <code>vᵢ·M_Q</code>, <b>values</b> <code>vⱼ·M_V</code>.','Linear(keys) and Linear(queries) → MatMul → <code>[Aᵢⱼ]</code> → Norm → <code>[Sᵢⱼ]</code> → MatMul with Linear(values) → <code>y₁ … yₙ</code>.','Do we have enough context from one block? Not sure, so add more sets of Linear layers: that is <b>multi-head</b>.'],
+  code:`import torch, torch.nn as nn
+
+class SelfAttention(nn.Module):
+    def __init__(self, d=512, d_k=64):
+        super().__init__()
+        self.keys    = nn.Linear(d, d_k, bias=False)   # M_K
+        self.queries = nn.Linear(d, d_k, bias=False)   # M_Q
+        self.values  = nn.Linear(d, d_k, bias=False)   # M_V
+
+    def forward(self, v):                      # v: (n, d)
+        A = self.queries(v) @ self.keys(v).T   # [A_ij]
+        S = (A / self.keys.out_features ** 0.5).softmax(dim=-1)   # [S_ij]
+        return S @ self.values(v)              # y_1 .. y_n`},
+
  {section:'Attention',kicker:'K, Q, V',title:'Query, Key, Value',visual:DIA.qkv,
   points:['<b>Query</b>: what I am looking for. <b>Key</b>: what I contain or offer. <b>Value</b>: the actual information I provide.','Each embedding is multiplied by <code>W_Q</code>, <code>W_K</code>, <code>W_V</code>. They start random and are <b>learned</b> every epoch (forward pass + backprop).','Query vs key finds relevance: <code>score = Q·K</code> answers “how relevant is this word to me?”'],
   code:`import numpy as np
@@ -185,7 +217,7 @@ print(softmax(raw).round(3))      # [1.    0.    0.   ]
 print(softmax(raw / 8).round(3))  # [0.665 0.245 0.09 ]`},
 
  {section:'Attention',kicker:'multi-head attention',title:'Eight heads look at the sentence differently',visual:DIA.multihead,
-  points:['A <b>head</b> is one self-attention mechanism, defined by its own set of <code>W_Q</code>, <code>W_K</code>, <code>W_V</code>.','Single head = one viewpoint. Multi-head = <b>multiple viewpoints at the same time</b>.','The paper used <b>8 heads</b> (a hyperparameter), each with dₖ = 64. Concatenated: 8 × 64 = 512, then mixed by <code>W_O</code>.'],
+  points:['A <b>head</b> is one self-attention mechanism, defined by its own set of <code>W_Q</code>, <code>W_K</code>, <code>W_V</code>. h heads = h sets of Linear layers.','<code>MultiHead(Q,K,V) = Concat(head₁ … headₕ) · Wᴼ</code>','<code>headᵢ = Attention(Q·Wᵢ<sup>Q</sup>, K·Wᵢ<sup>K</sup>, V·Wᵢ<sup>V</sup>)</code>','Single head = one viewpoint, multi-head = several at once. The paper used <b>h = 8</b> (a hyperparameter), each with dₖ = 64; the Concat + Dense (Wᴼ) layer brings it back to 512.'],
   code:`import torch, torch.nn as nn
 
 mha = nn.MultiheadAttention(embed_dim=512, num_heads=8, batch_first=True)
@@ -254,7 +286,7 @@ ffn = nn.Sequential(
 )`},
 
  {section:'Encoder block',kicker:'putting it together',title:'One encoder block, end to end',visual:DIA.encoder,
-  points:['x = e + p goes into multi-head self-attention, giving z (contextual vectors).','Add x back, LayerNorm, then the FFN, then Add & Norm again.','With one encoder, the output goes to the <b>decoder</b>. With many, it feeds the <b>next encoder block</b>.'],
+  points:['Encoder input: Input → Embedding → PE. x = e + p goes into multi-head self-attention (MHA, no mask).','The same input is <b>branched</b> around each sub-layer: residual connections are used <b>2 times</b> per block (after MHA and after the FFN), each followed by LayerNorm.','The block repeats <code>N = 6</code> times (a hyperparameter). The last block’s output goes to the <b>decoder</b>.'],
   code:`import torch.nn as nn
 
 class EncoderBlock(nn.Module):
@@ -289,7 +321,7 @@ print(tokens)   # ['<SOS>', 'हम', 'दोस्त', 'हैं', '<EOS>']`}
   points:['“Shifted right” means adding a token that marks the <b>start of the sentence</b>: <code>&lt;SOS&gt;</code>.','Input <code>&lt;SOS&gt; हम दोस्त हैं</code> is tokenized, embedded (512-d) and given positional encoding, like the encoder.','Each position learns to predict the word that comes <b>after</b> it.']},
 
  {section:'Decoder',kicker:'masked self-attention',title:'Future words are blocked',visual:DIA.maskflow,
-  points:['Each token may attend <b>only to itself and earlier tokens</b>.','Add a mask matrix to the scaled scores: <code>0</code> where allowed, <code>−∞</code> for future words.','Softmax turns every <code>−∞</code> into <b>0</b>, so future words get no weight.'],
+  points:['Masked multi-head attention <b>hides future information</b>: when predicting “The sun …”, token t₂ may see t₁ and t₂, never t₃.','Normal score matrix + mask matrix (<code>0</code> allowed, <code>−∞</code> for the future) = masked matrix.','<code>softmax(−∞) = 0</code>, so future words get no weight.','Mask is <b>mandatory in the decoder</b> (masked MHA) and <b>not used in the encoder</b> (plain MHA).'],
   code:`import torch
 
 n = 3                                    # हम दोस्त हैं
@@ -302,7 +334,7 @@ print(weights.round(decimals=2))         # upper triangle = 0`},
   points:['<b>Self-attention</b>: importance of each word relative to other words in the <b>same</b> sequence.','<b>Cross-attention</b>: one sequence attends to a <b>different</b> sequence to gather relevant information.','Dot size = attention weight. Example values, not real model output.']},
 
  {section:'Decoder',kicker:'cross-attention',title:'Queries from the output, keys and values from the input',visual:DIA.crosscalc,
-  points:['<b>Q</b> comes from the decoder (हम दोस्त हैं). <b>K</b> and <b>V</b> come from the encoder output (we are friends).','Same formula: <code>softmax(QKᵀ / √dₖ) · V</code>.','Each Hindi word gets a contextual vector built from the English words it matches, e.g. दोस्त ↔ friends.'],
+  points:['<b>Source sequence</b> (English input) → encoder → <b>K, V</b>. <b>Target sequence</b> (German or Hindi output) → decoder → <b>Q</b>.','The encoder’s Q is not sent across, and the decoder’s own K, V are not used in cross-attention.','<code>scores = Q_D · K_Eᵀ</code>, then <code>softmax(Q_D · K_Eᵀ / √dₖ) · V_E</code>.','Each target word gets a contextual vector built from the source words it matches, e.g. दोस्त ↔ friends.'],
   code:`import torch, torch.nn as nn
 
 cross = nn.MultiheadAttention(512, 8, batch_first=True)
@@ -312,6 +344,20 @@ enc = torch.randn(1, 3, 512)    # we are friends (encoder output)
 
 out, w = cross(query=dec, key=enc, value=enc)
 print(w.shape)                  # (1, 3, 3): Hindi rows x English cols`},
+
+ {section:'Decoder',kicker:'inference trick',title:'KV cache: don’t recompute',visual:DIA.kvcache,
+  points:['During inference (prediction), the encoder’s <b>K, V</b> do not change, so they are computed once and <b>saved</b>.','The decoder’s <b>Q is always computed</b>, once per new word.','Decoder-only LLMs (GPT, Claude) use the same idea: K, V of earlier tokens are cached so each new token only computes its own.'],
+  code:`import torch
+
+# encoder runs once; its K, V are cached for every decoding step
+K_enc, V_enc = W_K(enc_out), W_V(enc_out)          # saved
+
+tokens = ["<SOS>"]
+for step in range(max_len):
+    q = W_Q(decoder_state(tokens))[-1:]             # new Q every step
+    w = (q @ K_enc.T / 8).softmax(dim=-1)           # reuse cached K
+    ctx = w @ V_enc                                 # reuse cached V
+    tokens.append(next_word(ctx))`},
 
  {section:'Decoder',kicker:'putting it together',title:'One decoder block, end to end',visual:DIA.decoder,
   points:['Masked self-attention → Add & Norm.','Cross-attention with the encoder → Add & Norm.','FFN (512 → 2048 → 512) → Add & Norm. Every step keeps a residual (skip) connection.','The final decoder output goes to the Linear layer and Softmax.'],
@@ -343,6 +389,11 @@ print(vocab[probs.argmax()])`},
  // ---------- Architecture
  {section:'Architecture',kicker:'the whole paper in one picture',title:'Encoder and decoder',visual:DIA.full,
   points:['Left: the encoder block repeated N times.','Right: the decoder adds <b>masked</b> attention and <b>cross-attention</b>.','Cross-attention: Q comes from the decoder, K and V come from the encoder.','Top: Linear + Softmax gives the probability of each next word.']},
+
+ {type:'table',section:'Architecture',kicker:'four kinds of attention',title:'Where each attention is used',plain:true,
+  head:['Attention','Where','Q, K, V from','Mask'],
+  rows:[['Self-attention','Encoder and decoder','The same sequence','No'],['Multi-head attention','Encoder (MHA)','The same sequence, h heads','No'],['Masked multi-head','Decoder (MMHA)','The target sequence so far','Yes, mandatory'],['Cross-attention','Decoder','Q: decoder · K, V: encoder','No']],
+  note:'Architectures: encoder–decoder (seq2seq, translation), encoder-only (BERT), decoder-only (GPT).'},
 
  {type:'steps',section:'Architecture',kicker:'from my notes',title:'Encoder side vs decoder side',
   enc:['Input sequence','Input embedding','Positional encoding','Self-attention (multi-head)','Add & layer normalization','Feed-forward network','Residual + layer normalization','Repeat the block N times'],
