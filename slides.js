@@ -4,7 +4,7 @@
 const SLIDES=[
  {type:'title',section:'Intro',title:'Attention Is All You Need'},
 
- {type:'map',section:'Intro',kicker:'the plan',title:'Six stops through the paper'},
+ {type:'map',section:'Intro',kicker:'the plan',title:'Seven stops through the paper'},
 
  // ---------- Foundations
  {section:'Foundations',kicker:'what is an LLM',title:'Language modelling = predict the next word',visual:DIA.llm,
@@ -79,14 +79,6 @@ embed = nn.Embedding(num_embeddings=len(vocab), embedding_dim=512)
 e = embed(ids)              # trainable lookup table
 print(e.shape)              # (1, 3, 512) -> e1, e2, e3`},
 
- {section:'Input',kicker:'vector operations',title:'Concatenate or add?',visual:DIA.vecops,
-  points:['<b>Concatenation</b> appends vectors, so the length grows.','<b>Addition</b> sums values position by position, so the length stays the same.','Positional encoding is <b>added</b> to the embedding, which keeps every vector at 512-d.'],
-  code:`import numpy as np
-a, b = np.array([1, 2, 3]), np.array([5, 6, 7])
-
-np.concatenate([a, b])   # [1 2 3 5 6 7]  length 6
-a + b                    # [6 8 10]       length 3`},
-
  {section:'Input',kicker:'step 3 · positional encoding',title:'Why the model needs word order',visual:DIA.order,
   points:['Transformers read all tokens in parallel, so they <b>do not know order</b> by default.','Without position, “I love AI” and “AI love I” look the same.','Naive idea: number them 1, 2, 3 … n. Two problems:','No upper limit on token count, and large <b>discrete</b> numbers make training unstable.']},
 
@@ -107,6 +99,14 @@ print(positional_encoding(4, 6).round(3))`},
 
  {type:'pe',section:'Input',kicker:'worked example · d_model = 6',title:'Positional vectors for “I love my country”',
   points:['d_model = 6, so i = 0, 1, 2 (three sin/cos pairs).','Position 0 is always <code>[0, 1, 0, 1, 0, 1]</code>.','Each vector has the <b>same size as the embedding</b>, so we can add them.']},
+
+ {section:'Input',kicker:'vector operations',title:'Concatenate or add?',visual:DIA.vecops,
+  points:['<b>Concatenation</b> appends vectors, so the length grows.','<b>Addition</b> sums values position by position, so the length stays the same.','Positional encoding is <b>added</b> to the embedding, which keeps every vector at 512-d.'],
+  code:`import numpy as np
+a, b = np.array([1, 2, 3]), np.array([5, 6, 7])
+
+np.concatenate([a, b])   # [1 2 3 5 6 7]  length 6
+a + b                    # [6 8 10]       length 3`},
 
  {type:'quiz',section:'Input',kicker:'quick check',
   q:'Why is the positional vector added to the embedding instead of concatenated?',
