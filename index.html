@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Attention Is All You Need</title>
+<meta name="description" content="The Transformer paper explained from my handwritten notes: diagrams, Python code and quizzes.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Caveat:wght@500;700&family=Kalam:wght@400;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" style="fill:var(--ink)"/></marker>
+    <marker id="arp" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" style="fill:var(--pen)"/></marker>
+    <marker id="arr" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" style="fill:var(--margin)"/></marker>
+  </defs>
+</svg>
+
+<div class="margin-line" aria-hidden="true"></div>
+<div class="progress" id="progress"></div>
+<main id="stage" aria-live="polite"></main>
+<canvas id="ink" aria-hidden="true"></canvas>
+
+<nav class="toolbar" aria-label="Slide controls">
+  <button id="prev" title="Previous (←)" aria-label="Previous slide">‹</button>
+  <span class="count" id="count">1 / 1</span>
+  <button id="next" title="Next (→)" aria-label="Next slide">›</button>
+  <button id="btn-grid" title="All slides (G)" aria-label="All slides">▦</button>
+  <button id="btn-code" title="Python code (C)" aria-label="Show Python code" aria-pressed="false">&lt;/&gt;</button>
+  <span class="sep" aria-hidden="true"></span>
+  <button id="btn-hl" class="tool" title="Highlighter (H)" aria-label="Highlighter" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M15 4l5 5-9 9H6v-5z"/><path d="M4 21h9"/></svg></button>
+  <button id="btn-clear" title="Clear highlights on this slide (X)" aria-label="Clear highlights" hidden><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></button>
+  <span class="sep" aria-hidden="true"></span>
+  <button id="btn-theme" title="Light / dark (T)" aria-label="Toggle light or dark">◐</button>
+  <button id="btn-fs" class="opt-hide" title="Fullscreen (F)" aria-label="Fullscreen">⛶</button>
+</nav>
+
+<div class="overview" id="overview" hidden>
+  <div class="ov-inner">
+    <div class="ov-head"><h2>All slides</h2><button id="ov-close">Close (Esc)</button></div>
+    <div id="ov-body"></div>
+  </div>
+</div>
+
+<script src="diagrams.js"></script>
+<script src="slides.js"></script>
+<script src="deck.js"></script>
+</body>
+</html>
