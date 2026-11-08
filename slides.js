@@ -1,10 +1,29 @@
-// Slide content. Add a slide = add one object to SLIDES.
-// Types: title | map | table | pe | quiz | steps | summary | (default) concept slide with visual + points + code
+// Slide content. Add a slide = add one object to SLIDES. Episodes are defined in EPISODES.
+// Types: title | map | legend | episode | next | table | pe | quiz | steps | summary | (default) concept slide with visual + points + code
 /* ============ slide data ============ */
+const EPISODES=[
+ {n:1,title:'Why Transformers, and how text goes in',
+  topics:['What a language model does','RNN → LSTM → Transformer','Why LSTMs could not scale','Tokens and embeddings','Positional encoding with sin and cos'],
+  recap:['An LLM predicts the next word.','LSTMs read one word at a time, so training could not scale.','Transformers read all tokens in parallel.','Input = trainable 512-d embedding + sin/cos positional encoding, added together.']},
+ {n:2,title:'Self-attention from scratch',
+  topics:['Context as a weighted sum','Self-attention by hand','Making it trainable with Q, K, V','The attention formula','Why we divide by √dₖ'],
+  recap:['Self-attention mixes every word into a weighted sum of all words.','Q, K, V come from the learnable matrices W_Q, W_K, W_V.','Attention = softmax(QKᵀ / √dₖ) · V, with dₖ = 64 so √dₖ = 8.']},
+ {n:3,title:'Multi-head attention and the encoder',
+  topics:['Heads as different viewpoints','Ambiguous sentences','Concat and W_O','Residual connections','LayerNorm and the feed-forward network','A full encoder block'],
+  recap:['8 heads = 8 viewpoints, concatenated and mixed by Wᴼ.','Residual + LayerNorm wrap every sub-layer.','The FFN (512 → 2048 → 512) adds non-linearity.','The encoder block repeats N = 6 times.']},
+ {n:4,title:'The decoder and the full architecture',
+  topics:['Translation and autoregressive inference','Shifted right','Masked attention','Cross-attention','KV cache','Linear + softmax','Encoder-only vs decoder-only LLMs'],
+  recap:[]}
+];
+
 const SLIDES=[
  {type:'title',section:'Intro',title:'Attention Is All You Need'},
 
- {type:'map',section:'Intro',kicker:'the plan',title:'Seven stops through the paper'},
+ {type:'map',section:'Intro',kicker:'the series',title:'Four episodes, one architecture'},
+
+ {type:'legend',section:'Intro',kicker:'before we start',title:'One colour code for every diagram'},
+
+ {type:'episode',ep:1,section:'Episode 1'},
 
  // ---------- Foundations
  {section:'Foundations',kicker:'what is an LLM',title:'Language modelling = predict the next word',visual:DIA.llm,
@@ -114,6 +133,10 @@ a + b                    # [6 8 10]       length 3`},
   explain:'<b>Same dimension.</b> Adding keeps every token vector at 512-d. Concatenating would double the size for every layer that follows.'},
 
  // ---------- Attention
+ {type:'next',ep:1,section:'Input'},
+
+ {type:'episode',ep:2,section:'Episode 2'},
+
  {section:'Attention',kicker:'step 4 · self-attention',title:'A word looks at the other words in its sentence',visual:DIA.apple,
   points:['<b>Attention</b>: weighting words across different sentences (e.g. source and translation).','<b>Self-attention</b>: a word looks at the other words in the <b>same</b> sentence to understand its meaning.','So the two “apple”s get <b>different embeddings</b>: the word now carries context.']},
 
@@ -216,6 +239,15 @@ raw = np.array([24., 16., 8.])
 print(softmax(raw).round(3))      # [1.    0.    0.   ]
 print(softmax(raw / 8).round(3))  # [0.665 0.245 0.09 ]`},
 
+ {type:'quiz',section:'Attention',kicker:'quick check',
+  q:'In the original paper, what is √dₖ and why is it used?',
+  opts:['√512 ≈ 22.6, to make the model bigger','√64 = 8, to stop large dot products from saturating softmax','√8 ≈ 2.8, because there are 8 heads','It is a learned parameter'],answer:1,
+  explain:'<b>dₖ = 64, so √dₖ = 8.</b> Dividing scores by 8 keeps softmax from collapsing onto one word, which keeps gradients healthy.'},
+
+ {type:'next',ep:2,section:'Attention'},
+
+ {type:'episode',ep:3,section:'Episode 3'},
+
  {section:'Attention',kicker:'multi-head attention',title:'Eight heads look at the sentence differently',visual:DIA.multihead,
   points:['A <b>head</b> is one self-attention mechanism, defined by its own set of <code>W_Q</code>, <code>W_K</code>, <code>W_V</code>. h heads = h sets of Linear layers.','<code>MultiHead(Q,K,V) = Concat(head₁ … headₕ) · Wᴼ</code>','<code>headᵢ = Attention(Q·Wᵢ<sup>Q</sup>, K·Wᵢ<sup>K</sup>, V·Wᵢ<sup>V</sup>)</code>','Single head = one viewpoint, multi-head = several at once. The paper used <b>h = 8</b> (a hyperparameter), each with dₖ = 64; the Concat + Dense (Wᴼ) layer brings it back to 512.'],
   code:`import torch, torch.nn as nn
@@ -239,11 +271,6 @@ concat = np.concatenate([ce_head1, ce_head2], axis=1)   # (2, 6)
 W_O    = np.random.randn(6, 3)                           # learnable
 final  = concat @ W_O                                    # (2, 3)
 print(concat.shape, final.shape)`},
-
- {type:'quiz',section:'Attention',kicker:'quick check',
-  q:'In the original paper, what is √dₖ and why is it used?',
-  opts:['√512 ≈ 22.6, to make the model bigger','√64 = 8, to stop large dot products from saturating softmax','√8 ≈ 2.8, because there are 8 heads','It is a learned parameter'],answer:1,
-  explain:'<b>dₖ = 64, so √dₖ = 8.</b> Dividing scores by 8 keeps softmax from collapsing onto one word, which keeps gradients healthy.'},
 
  // ---------- Block
  {section:'Encoder block',kicker:'from ResNet (CNN)',title:'Residual connections',visual:DIA.residual,
@@ -301,6 +328,10 @@ class EncoderBlock(nn.Module):
         z, _ = self.attn(x, x, x)
         x = self.norm1(x + z)            # add & norm
         return self.norm2(x + self.ffn(x))`},
+
+ {type:'next',ep:3,section:'Encoder block'},
+
+ {type:'episode',ep:4,section:'Episode 4'},
 
  // ---------- Decoder
  {section:'Decoder',kicker:'the original job',title:'Built for machine translation',visual:DIA.nmt,
@@ -395,7 +426,7 @@ print(vocab[probs.argmax()])`},
   rows:[['Self-attention','Encoder and decoder','The same sequence','No'],['Multi-head attention','Encoder (MHA)','The same sequence, h heads','No'],['Masked multi-head','Decoder (MMHA)','The target sequence so far','Yes, mandatory'],['Cross-attention','Decoder','Q: decoder · K, V: encoder','No']],
   note:'Architectures: encoder–decoder (seq2seq, translation), encoder-only (BERT), decoder-only (GPT).'},
 
- {type:'steps',section:'Architecture',kicker:'from my notes',title:'Encoder side vs decoder side',
+ {type:'steps',section:'Architecture',kicker:'step by step',title:'Encoder side vs decoder side',
   enc:['Input sequence','Input embedding','Positional encoding','Self-attention (multi-head)','Add & layer normalization','Feed-forward network','Residual + layer normalization','Repeat the block N times'],
   dec:['Output sequence (shifted right)','Output embedding (512-d)','Positional encoding','Masked multi-head attention','Add & layer normalization','Residual connection','Cross-attention (encoder ↔ decoder)','Add & layer normalization','Feed-forward network','Add & layer normalization','Linear layer','Softmax','Final output (probabilities)','Repeat the block N times'],
   keyEnc:[3],keyDec:[3,6,11]},

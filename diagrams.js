@@ -1,4 +1,5 @@
 // Drawing helpers and hand-drawn style SVG diagrams, one per concept.
+// Colour code: 'learn' = learnable weights, 'data' = vectors, 'fix' = fixed operation (no weights), 'hot' = focus.
 /* ============ drawing helpers ============ */
 const T=(x,y,t,c='')=>{const L=String(t).split('\n');return `<text x="${x}" y="${y}" class="${c}" text-anchor="middle" dominant-baseline="central">${L.map((l,i)=>`<tspan x="${x}" dy="${i?1.05:-(L.length-1)*0.52}em">${l}</tspan>`).join('')}</text>`};
 const TL=(x,y,t,c='')=>`<text x="${x}" y="${y}" class="${c}" dominant-baseline="central">${t}</text>`;
@@ -37,22 +38,22 @@ seqpar:S('0 0 540 300',`
 
 infer:S('0 0 540 270',`
   ${TL(14,26,'1 · Training','red')}
-  ${B(20,48,140,52,'lots of text')}${A(160,74,205,74)}${B(207,48,130,52,'model','pen')}${A(337,74,382,74)}${B(384,48,140,52,'adjust weights')}
+  ${B(20,48,140,52,'lots of text')}${A(160,74,205,74)}${B(207,48,130,52,'model','learn')}${A(337,74,382,74)}${B(384,48,140,52,'adjust weights','learn')}
   ${P('M454 100 Q454 130 272 130 Q262 130 262 104','red')}${T(360,146,'repeat for many epochs','sm red')}
   ${TL(14,186,'2 · Inference','blue')}
-  ${B(20,206,140,52,'prompt')}${A(160,232,205,232)}${B(207,206,130,52,'GPT','hot')}${A(337,232,382,232)}${B(384,206,140,52,'answer')}`,'Training vs inference'),
+  ${B(20,206,140,52,'prompt')}${A(160,232,205,232)}${B(207,206,130,52,'GPT · frozen','learn hot')}${A(337,232,382,232)}${B(384,206,140,52,'answer')}`,'Training vs inference'),
 
 pipeline:S('0 0 560 260',`
-  ${B(10,30,110,56,'Text')}${B(150,30,120,56,'Tokenize')}${B(300,30,120,56,'Embedding')}${B(440,30,110,56,'+ Position')}
-  ${B(440,170,110,56,'Self-\nattention','hot')}${B(300,170,120,56,'Feed-\nforward')}${B(150,170,120,56,'Output','pen')}
+  ${B(10,30,110,56,'Text')}${B(150,30,120,56,'Tokenize','fix')}${B(300,30,120,56,'Embedding','learn')}${B(440,30,110,56,'+ Position','fix')}
+  ${B(440,170,110,56,'Self-\nattention','learn hot')}${B(300,170,120,56,'Feed-\nforward','learn')}${B(150,170,120,56,'Output','data')}
   ${A(120,58,148,58)}${A(270,58,298,58)}${A(420,58,438,58)}${A(495,86,495,168)}${A(440,198,422,198)}${A(300,198,272,198)}
-  ${T(225,128,'inside one encoder block →','sm red')}
-  ${L('M290 160 L290 240 L556 240 L556 160','red')}`,'Transformer input pipeline'),
+  ${T(225,128,'inside one encoder block →','sm muted')}
+  ${L('M290 160 L290 240 L556 240 L556 160','fix')}`,'Transformer input pipeline'),
 
 embed:S('0 0 540 330',`
   ${['How','are','you'].map((w,i)=>B(30+i*175,14,110,40,w)).join('')}
-  ${B(20,80,500,44,'Embedding layer · 512-d · trainable','pen')}
-  ${[0,1,2].map(i=>A(85+i*175,54,85+i*175,78)+A(85+i*175,124,85+i*175,146)+V(40+i*175,148,['','','',''],{label:'e'+(i+1)})+T(85+i*175,206,'+','red')+V(40+i*175,218,['','','',''],{c:'pe',label:'p'+(i+1)})+A(85+i*175,262,85+i*175,282)+V(40+i*175,284,['','','',''],{c:'on'})).join('')}
+  ${B(20,80,500,44,'Embedding layer · 512-d · trainable','learn')}
+  ${[0,1,2].map(i=>A(85+i*175,54,85+i*175,78)+A(85+i*175,124,85+i*175,146)+V(40+i*175,148,['','','',''],{c:'data',label:'e'+(i+1)})+T(85+i*175,206,'+','muted')+V(40+i*175,218,['','','',''],{c:'fix',label:'p'+(i+1)+' (sin/cos)'})+A(85+i*175,262,85+i*175,282)+V(40+i*175,284,['','','',''],{c:'on'})).join('')}
   ${TL(10,300,'x','blue')}`,'Embedding plus positional encoding'),
 
 vecops:S('0 0 540 300',`
@@ -94,22 +95,22 @@ bank:(()=>{const arc=(x1,x2,y,h,w,lab,c)=>{if(x1===x2)return `${L(`M${x1-10} ${y
     ${TL(10,148,'S1','sm muted')}${TL(10,298,'S2','sm muted')}`,'Bank attends differently in two sentences')})(),
 
 qkv:S('0 0 540 280',`
-  ${B(10,112,100,50,'e_money','hot')}
+  ${B(10,112,100,50,'e_money','data hot')}
   ${A(110,128,175,52)}${A(110,137,175,137)}${A(110,146,175,222)}
-  ${[['W_Q',20,'pen'],['W_K',105,'pen'],['W_V',190,'red']].map(([n,y,c])=>`<g class="bx ${c}"><rect x="178" y="${y}" width="110" height="62" rx="6"/></g>${L(`M215 ${y} L215 ${y+62} M252 ${y} L252 ${y+62} M178 ${y+31} L288 ${y+31}`,'soft')}${T(233,y-8,n,'sm')}`).join('')}
+  ${[['W_Q',20,'learn'],['W_K',105,'learn'],['W_V',190,'learn']].map(([n,y,c])=>`<g class="bx ${c}"><rect x="178" y="${y}" width="110" height="62" rx="6"/></g>${L(`M215 ${y} L215 ${y+62} M252 ${y} L252 ${y+62} M178 ${y+31} L288 ${y+31}`,'soft')}${T(233,y-8,n,'sm')}`).join('')}
   ${A(288,51,345,51)}${A(288,136,345,136)}${A(288,221,345,221)}
-  ${V(350,38,['','','',''],{c:'blue'})}${TL(476,51,'q  query')}
-  ${V(350,123,['','','',''],{c:'blue'})}${TL(476,136,'k  key')}
-  ${V(350,208,['','','',''],{c:'pe'})}${TL(476,221,'v  value')}
+  ${V(350,38,['','','',''],{c:'data'})}${TL(476,51,'q  query')}
+  ${V(350,123,['','','',''],{c:'data'})}${TL(476,136,'k  key')}
+  ${V(350,208,['','','',''],{c:'data'})}${TL(476,221,'v  value')}
   ${T(233,272,'learnable weights','sm red')}`,'Q K V projections'),
 
 scaled:S('0 0 560 300',`
-  ${B(20,40,90,44,'Q','pen')}${B(20,110,90,44,'K','pen')}${B(20,220,90,44,'V','red')}
-  ${B(150,62,115,60,'Q · Kᵀ\nscores')}${A(110,62,148,84)}${A(110,132,148,104)}
-  ${B(295,62,105,60,'÷ √dₖ\n= ÷ 8')}${A(265,92,293,92)}
-  ${B(430,62,115,60,'softmax\nweights','hot')}${A(400,92,428,92)}
-  ${B(295,212,105,60,'weights\n× V')}${A(110,242,293,242,'red')}${P('M487 122 Q487 190 402 230')}
-  ${B(430,212,115,60,'Y\ncontext','pen')}${A(400,242,428,242)}
+  ${B(20,40,90,44,'Q','data')}${B(20,110,90,44,'K','data')}${B(20,220,90,44,'V','data')}
+  ${B(150,62,115,60,'Q · Kᵀ\nscores','fix')}${A(110,62,148,84)}${A(110,132,148,104)}
+  ${B(295,62,105,60,'÷ √dₖ\n= ÷ 8','fix')}${A(265,92,293,92)}
+  ${B(430,62,115,60,'softmax\nweights','fix hot')}${A(400,92,428,92)}
+  ${B(295,212,105,60,'weights\n× V','fix')}${A(110,242,293,242,'pen')}${P('M487 122 Q487 190 402 230')}
+  ${B(430,212,115,60,'Y\ncontext','data')}${A(400,242,428,242)}
   ${T(207,160,'how much each word\nmatches every other word','sm muted')}`,'Scaled dot-product attention'),
 
 dot:S('0 0 540 300',`
@@ -127,60 +128,60 @@ sqrtdk:S('0 0 540 290',`
   ${T(135,280,'one word takes everything','sm muted')}${T(395,280,'weights stay spread out','sm muted')}`,'Effect of scaling by root dk'),
 
 multihead:S('0 0 560 290',`
-  ${B(10,118,105,54,'X\nn × 512','hot')}
-  ${['head 1','head 2','head 3','⋮','head 8'].map((h,i)=>(h==='⋮'?T(225,25+i*58,'⋮'):B(175,4+i*56,100,42,h,'pen'))+(h==='⋮'?'':A(115,145,173,25+i*56)+A(275,25+i*56,333,145))).join('')}
+  ${B(10,118,105,54,'X\nn × 512','data hot')}
+  ${['head 1','head 2','head 3','⋮','head 8'].map((h,i)=>(h==='⋮'?T(225,25+i*58,'⋮'):B(175,4+i*56,100,42,h,'learn'))+(h==='⋮'?'':A(115,145,173,25+i*56)+A(275,25+i*56,333,145))).join('')}
   ${T(225,286,'8 heads × 64-d each','sm muted')}
-  ${B(335,112,105,66,'concat\n8 × 64\n= 512')}${A(440,145,463,145)}
-  ${B(465,118,85,54,'× W_O','red')}`,'Multi-head attention'),
+  ${B(335,112,105,66,'concat\n8 × 64\n= 512','fix')}${A(440,145,463,145)}
+  ${B(465,118,85,54,'× W_O','learn')}`,'Multi-head attention'),
 
 residual:S('0 0 560 260',`
   ${B(10,60,95,46,'sunny')}${B(150,60,110,46,'sunlight')}${B(305,60,95,46,'dhoop')}${B(445,60,100,46,'bright')}
   ${A(105,83,148,83)}${A(260,83,303,83)}${A(400,83,443,83)}
-  ${P('M57 106 Q57 150 200 150 L470 150 Q495 150 495 112','red')}${T(275,166,'skip connection · add the original input back','sm red')}
-  ${A(495,106,495,200)}${B(400,198,150,50,'bright + sunny','hot')}
+  ${P('M57 106 Q57 150 200 150 L470 150 Q495 150 495 112','fix')}${T(275,166,'skip connection · add the original input back','sm muted')}
+  ${A(495,106,495,200)}${B(400,198,150,50,'bright + sunny','data hot')}
   ${T(190,222,'output = x + F(x)','blue')}`,'Residual connection analogy'),
 
 addnorm:S('0 0 540 270',`
   ${V(20,40,['1','1','2'])}${T(130,53,'x  input','sm muted')}
-  ${T(65,92,'+','red')}
-  ${V(20,106,['1','3','4'],{c:'blue'})}${T(140,119,'z  attention','sm muted')}
+  ${T(65,92,'+','muted')}
+  ${V(20,106,['1','3','4'],{c:'data'})}${T(140,119,'z  attention','sm muted')}
   ${A(110,150,205,150)}${V(210,137,['2','4','6'],{c:'on'})}${T(255,182,'x + z','sm muted')}
-  ${A(300,150,335,150)}${B(337,128,90,44,'LayerNorm','pen')}${A(427,150,440,150)}
+  ${A(300,150,335,150)}${B(337,128,90,44,'LayerNorm','learn')}${A(427,150,440,150)}
   ${V(205,214,['−1.22','0','1.22'],{w:56})}${P('M480 172 Q480 228 375 228')}
-  ${T(290,262,'mean 0, spread 1 · per token','sm red')}`,'Add and layer normalization'),
+  ${T(290,262,'mean 0, spread 1 · per token','sm muted')}`,'Add and layer normalization'),
 
 ffn:(()=>{const col=(x,n,y0,gap)=>Array.from({length:n},(_,i)=>[x,y0+i*gap]);const a=col(90,3,80,60),b=col(270,6,30,40),c=col(450,3,80,60);
   const edges=(p,q)=>p.flatMap(([x1,y1])=>q.map(([x2,y2])=>`M${x1} ${y1} L${x2} ${y2}`)).join(' ');
-  return S('0 0 540 290',`<path class="ln soft" d="${edges(a,b)} ${edges(b,c)}"/>
+  return S('0 0 540 290',`<path class="ln learn" d="${edges(a,b)} ${edges(b,c)}"/>
    ${[...a,...b,...c].map(([x,y])=>`<circle class="dot" cx="${x}" cy="${y}" r="11"/>`).join('')}
    ${b.map(([x,y])=>`<circle cx="${x}" cy="${y}" r="5" style="fill:var(--pen)"/>`).join('')}
-   ${T(90,270,'512','svg-mono')}${T(270,270,'2048 · ReLU','svg-mono')}${T(450,270,'512','svg-mono')}
-   ${T(90,30,'in','sm muted')}${T(450,30,'out','sm muted')}`,'Feed-forward network')})(),
+   ${T(90,276,'512','svg-mono')}${T(270,276,'2048 · ReLU','svg-mono')}${T(450,276,'512','svg-mono')}
+   ${T(90,30,'in','sm muted')}${T(450,30,'out','sm muted')}${T(270,252,'every line is a learnable weight','sm red')}`,'Feed-forward network')})(),
 
 encoder:S('0 0 380 470',`
-  ${B(100,410,240,46,'x = embedding + position','hot')}
-  ${A(220,410,220,378)}${B(100,330,240,46,'Multi-head self-attention','pen')}
-  ${A(220,330,220,302)}${B(100,262,240,38,'Add & LayerNorm')}
-  ${A(220,262,220,232)}${B(100,184,240,46,'Feed-forward (FFN)')}
-  ${A(220,184,220,152)}${B(100,114,240,38,'Add & LayerNorm')}
-  ${A(220,114,220,72)}${B(70,22,300,48,'next encoder · or the decoder','red dash')}
-  ${P('M220 396 L40 396 L40 281 L96 281','red')}${P('M220 246 L40 246 L40 133 L96 133','red')}
-  ${T(30,340,'skip','sm red')}${T(30,190,'skip','sm red')}`,'One encoder block'),
+  ${B(100,410,240,46,'x = embedding + position','data hot')}
+  ${A(220,410,220,378)}${B(100,330,240,46,'Multi-head self-attention','learn')}
+  ${A(220,330,220,302)}${B(100,262,240,38,'Add & LayerNorm','learn')}
+  ${A(220,262,220,232)}${B(100,184,240,46,'Feed-forward (FFN)','learn')}
+  ${A(220,184,220,152)}${B(100,114,240,38,'Add & LayerNorm','learn')}
+  ${A(220,114,220,72)}${B(70,22,300,48,'next encoder · or the decoder','data')}
+  ${P('M220 396 L40 396 L40 281 L96 281','fix')}${P('M220 246 L40 246 L40 133 L96 133','fix')}
+  ${T(30,340,'skip','sm muted')}${T(30,190,'skip','sm muted')}`,'One encoder block'),
 
 full:S('0 0 560 520',`
-  <g class="bx dash"><rect x="25" y="228" width="230" height="190" rx="14"/></g>${T(20,240,'N×','sm red')}
-  ${B(40,370,200,32,'Multi-head attention','pen')}${B(40,330,200,30,'Add & Norm')}${B(40,286,200,32,'Feed-forward')}${B(40,246,200,30,'Add & Norm')}
-  ${B(40,466,200,38,'inputs + positions','hot')}${A(140,466,140,404)}${A(140,370,140,362)}${A(140,330,140,320)}${A(140,286,140,278)}
+  <g class="bx dash"><rect x="25" y="228" width="230" height="190" rx="14"/></g>${T(20,240,'N×','sm muted')}
+  ${B(40,370,200,32,'Multi-head attention','learn')}${B(40,330,200,30,'Add & Norm','learn')}${B(40,286,200,32,'Feed-forward','learn')}${B(40,246,200,30,'Add & Norm','learn')}
+  ${B(40,466,200,38,'inputs + positions','data hot')}${A(140,466,140,404)}${A(140,370,140,362)}${A(140,330,140,320)}${A(140,286,140,278)}
   ${T(140,210,'ENCODER','blue')}
-  <g class="bx dash"><rect x="295" y="150" width="250" height="268" rx="14"/></g>${T(540,162,'N×','sm red')}
-  ${B(310,374,220,32,'Masked multi-head attn','red')}${B(310,334,220,30,'Add & Norm')}${B(310,288,220,34,'Cross-attention','pen')}${B(310,248,220,30,'Add & Norm')}${B(310,204,220,32,'Feed-forward')}${B(310,164,220,30,'Add & Norm')}
-  ${B(310,466,220,38,'outputs, shifted right','hot')}${A(420,466,420,408)}${A(420,374,420,366)}${A(420,334,420,324)}${A(420,288,420,280)}${A(420,248,420,238)}${A(420,204,420,196)}
-  ${A(420,164,420,128)}${B(340,94,160,32,'Linear')}${A(420,94,420,74)}${B(340,40,160,32,'Softmax','hot')}${T(420,16,'next-word probabilities','sm blue')}
+  <g class="bx dash"><rect x="295" y="150" width="250" height="268" rx="14"/></g>${T(540,162,'N×','sm muted')}
+  ${B(310,374,220,32,'Masked multi-head attn','learn')}${B(310,334,220,30,'Add & Norm','learn')}${B(310,288,220,34,'Cross-attention','learn')}${B(310,248,220,30,'Add & Norm','learn')}${B(310,204,220,32,'Feed-forward','learn')}${B(310,164,220,30,'Add & Norm','learn')}
+  ${B(310,466,220,38,'outputs, shifted right','data hot')}${A(420,466,420,408)}${A(420,374,420,366)}${A(420,334,420,324)}${A(420,288,420,280)}${A(420,248,420,238)}${A(420,204,420,196)}
+  ${A(420,164,420,128)}${B(340,94,160,32,'Linear','learn')}${A(420,94,420,74)}${B(340,40,160,32,'Softmax','fix')}${T(420,16,'next-word probabilities','sm blue')}
   ${P('M240 261 L275 261 L275 305 L308 305','pen')}${T(140,176,'K, V →\ncross-attention','sm blue')}`,'Full Transformer architecture'),
 
 mask:(()=>{const w=['I','love','my','country'];return S('0 0 540 280',`
   ${w.map((t,i)=>T(170+i*70,24,t,'sm')+TL(20,70+i*52,t,'sm')).join('')}
-  ${w.map((_,r)=>w.map((_,c)=>`<rect class="cell ${c<=r?'on':''}" x="${140+c*70}" y="${46+r*52}" width="60" height="44" rx="5"/>${T(170+c*70,68+r*52,c<=r?'✓':'−∞',c<=r?'blue':'red')}`).join('')).join('')}
+  ${w.map((_,r)=>w.map((_,c)=>`<rect class="cell ${c<=r?'on':'fix'}" x="${140+c*70}" y="${46+r*52}" width="60" height="44" rx="5"/>${T(170+c*70,68+r*52,c<=r?'✓':'−∞',c<=r?'blue':'muted')}`).join('')).join('')}
   ${T(270,270,'a word may only look at itself and earlier words','sm muted')}`,'Masked attention grid')})(),
 
 layers:S('0 0 540 300',`
@@ -194,9 +195,9 @@ families:S('0 0 560 280',`
   ${T(95,200,'understands text\n(classify, search)','sm muted')}${T(280,200,'translate,\nsummarize','sm muted')}${T(465,222,'generates text,\nnext-word prediction','sm muted')}`,'Transformer families'),
 
 shapes:S('0 0 560 270',`
-  ${V(10,40,['','','','','',''],{w:28})}${T(94,90,'e_money · 1 × 512','sm')}
+  ${V(10,40,['','','','','',''],{w:28,c:'data'})}${T(94,90,'e_money · 1 × 512','sm')}
   ${T(200,53,'×')}
-  ${M(225,18,4,3,34,22,'blue')}${T(276,120,'W_Q · 512 × 64','sm blue')}
+  ${M(225,18,4,3,34,22,'learn')}${T(276,120,'W_Q · 512 × 64','sm red')}
   ${A(335,53,375,53)}${V(380,40,['','','',''],{w:28,c:'on'})}${T(436,90,'q · 1 × 64','sm')}
   ${T(280,170,'(1 × 512) · (512 × 64) = (1 × 64)','svg-mono')}
   ${B(150,200,260,52,'so dₖ = 64,  √dₖ = 8','hot')}`,'Matrix shapes for Q'),
@@ -208,53 +209,53 @@ ambig:(()=>{const row=(y,ws,arcs)=>{const xs=[];let x=14;const out=ws.map(w=>{co
    ${row(240,['Man','saw','the','astronomer','with','a','telescope'],[[0,6,90,'pen','head 1: the man has it'],[3,6,-56,'red','head 2: the astronomer has it']])}`,'Two heads, two readings')})(),
 
 concat:S('0 0 560 260',`
-  ${M(14,30,2,3,26,26,'blue')}${T(53,100,'CE head 1\n2 × 3','sm blue')}
-  ${M(14,150,2,3,26,26,'pe')}${T(53,220,'CE head 2\n2 × 3','sm red')}
+  ${M(14,30,2,3,26,26,'data')}${T(53,100,'CE head 1\n2 × 3','sm blue')}
+  ${M(14,150,2,3,26,26,'data')}${T(53,220,'CE head 2\n2 × 3','sm blue')}
   ${A(100,56,160,96)}${A(100,176,160,120)}
   ${M(165,82,2,6,24,26,'on')}${T(237,152,'concat · 2 × 6','sm')}
   ${T(325,108,'×')}
-  ${M(345,30,6,3,24,22,'')}${T(381,178,'W_O · 6 × 3\nlearnable','sm')}
+  ${M(345,30,6,3,24,22,'learn')}${T(381,178,'W_O · 6 × 3\nlearnable','sm red')}
   ${A(425,108,460,108)}${M(465,82,2,3,26,26,'on')}${T(504,152,'final · 2 × 3','sm')}
   ${T(280,240,'rows = money, bank · back to the original width','sm muted')}`,'Concatenating heads'),
 
 scaling:S('0 0 540 280',`
   ${TL(10,22,'raw values','sm muted')}${V(20,40,[2,4,6],{w:44})}
   ${A(160,53,200,30)}${A(160,53,200,120)}
-  ${TL(210,16,'min-max → [0, 1]','sm red')}${V(210,30,['0','0.5','1'],{w:56,c:'pe'})}
-  ${TL(210,104,'standard → μ 0, σ 1','sm blue')}${V(210,118,['−1.22','0','1.22'],{w:56,c:'blue'})}
+  ${TL(210,16,'min-max → [0, 1]','sm muted')}${V(210,30,['0','0.5','1'],{w:56,c:'fix'})}
+  ${TL(210,104,'standard → μ 0, σ 1','sm blue')}${V(210,118,['−1.22','0','1.22'],{w:56,c:'data'})}
   ${A(294,146,294,180,'pen')}
-  ${B(150,184,290,44,'× γ + β   (γ = [1,1,1], β = [0,0,0] at start)','hot','sm')}
+  ${B(150,184,290,44,'× γ + β   (γ = [1,1,1], β = [0,0,0] at start)','learn','sm')}
   ${T(295,256,'LayerNorm uses the standard version, per token','sm muted')}`,'Normalization types'),
 
 nmt:S('0 0 560 270',`
-  ${B(30,60,180,130,'Encoder\nreads the\nsource','pen')}${B(350,60,180,130,'Decoder\nwrites the\ntarget','red')}
-  ${M(235,30,2,3,22,18,'on')}${T(268,80,'context','sm muted')}
+  ${B(30,60,180,130,'Encoder\nreads the\nsource','learn')}${B(350,60,180,130,'Decoder\nwrites the\ntarget','learn')}
+  ${M(235,30,2,3,22,18,'data')}${T(268,80,'context','sm muted')}
   ${P('M210 100 L330 100 L330 125 L348 125','pen')}
-  ${A(120,235,120,192)}${A(440,192,440,235,'red')}
+  ${A(120,235,120,192)}${A(440,192,440,235,'pen')}
   ${T(120,252,'We are friends')}${T(440,252,'हम दोस्त हैं')}
   ${T(280,18,'original task: machine translation','sm muted')}`,'Encoder reads, decoder writes'),
 
 autoreg:S('0 0 560 300',`
-  ${TL(8,18,'LSTM · training and prediction are both step by step','sm red')}
-  ${['Nice','to','meet','you'].map((w,i)=>B(14+i*136,36,100,40,'LSTM','','sm')+T(64+i*136,92,'t'+i+' · '+w,'sm muted')).join('')}
+  ${TL(8,18,'LSTM · training and prediction are both step by step','sm muted')}
+  ${['Nice','to','meet','you'].map((w,i)=>B(14+i*136,36,100,40,'LSTM','learn','sm')+T(64+i*136,92,'t'+i+' · '+w,'sm muted')).join('')}
   ${A(114,56,148,56)}${A(250,56,284,56)}${A(386,56,420,56)}
   ${TL(8,140,'Transformer decoder at inference · one word per pass','sm blue')}
-  ${[['<SOS>','हम'],['<SOS> हम','दोस्त'],['<SOS> हम दोस्त','हैं']].map(([inp,out],i)=>`${B(14,158+i*46,230,36,inp,'','sm')}${A(244,176+i*46,300,176+i*46,'pen')}${B(304,158+i*46,110,36,'decoder','pen','sm')}${A(414,176+i*46,446,176+i*46,'pen')}${B(450,158+i*46,96,36,out,'hot','sm')}`).join('')}`,'Autoregressive generation'),
+  ${[['<SOS>','हम'],['<SOS> हम','दोस्त'],['<SOS> हम दोस्त','हैं']].map(([inp,out],i)=>`${B(14,158+i*46,230,36,inp,'data','sm')}${A(244,176+i*46,300,176+i*46,'pen')}${B(304,158+i*46,110,36,'decoder','learn','sm')}${A(414,176+i*46,446,176+i*46,'pen')}${B(450,158+i*46,96,36,out,'hot','sm')}`).join('')}`,'Autoregressive generation'),
 
 shifted:S('0 0 560 250',`
   ${TL(8,30,'target','sm muted')}${['हम','दोस्त','हैं','<EOS>'].map((w,i)=>B(120+i*108,12,96,38,w,'hot','sm')).join('')}
   ${[0,1,2,3].map(i=>A(168+i*108,132,168+i*108,54,'pen')).join('')}
   ${T(340,93,'predicts the next word','sm blue')}
-  ${TL(8,154,'decoder input','sm muted')}${['<SOS>','हम','दोस्त','हैं'].map((w,i)=>B(120+i*108,136,96,38,w,i?'':'red','sm')).join('')}
-  ${P('M168 196 Q168 232 260 232 L392 232','red')}${T(290,218,'everything moves one step right','sm red')}`,'Shifted right'),
+  ${TL(8,154,'decoder input','sm muted')}${['<SOS>','हम','दोस्त','हैं'].map((w,i)=>B(120+i*108,136,96,38,w,'data','sm')).join('')}
+  ${P('M168 196 Q168 232 260 232 L392 232','fix')}${T(290,218,'everything moves one step right','sm muted')}`,'Shifted right'),
 
 maskflow:(()=>{const g=(x,y,vals,c)=>vals.map((r,i)=>r.map((v,j)=>`<rect class="cell ${typeof c==='function'?c(i,j):c}" x="${x+j*42}" y="${y+i*32}" width="42" height="32"/>${T(x+j*42+21,y+i*32+16,v,'svg-mono')}`).join('')).join('');
   const S3=[['s11','s12','s13'],['s21','s22','s23'],['s31','s32','s33']];
   const Mk=[['0','−∞','−∞'],['0','0','−∞'],['0','0','0']];
   const W=[['w11','0','0'],['w21','w22','0'],['w31','w32','w33']];
-  return S('0 0 560 290',`${g(10,20,S3,'')}${T(73,132,'scaled scores','sm')}${T(150,68,'+')}
-   ${g(165,20,Mk,(i,j)=>j>i?'pe':'')}${T(228,132,'mask','sm red')}${A(296,68,330,68)}
-   ${g(335,20,S3.map((r,i)=>r.map((v,j)=>j>i?'−∞':v)),(i,j)=>j>i?'pe':'')}${T(398,132,'masked scores','sm')}
+  return S('0 0 560 290',`${g(10,20,S3,'data')}${T(73,132,'scaled scores','sm')}${T(150,68,'+')}
+   ${g(165,20,Mk,(i,j)=>'fix')}${T(228,132,'mask (fixed)','sm muted')}${A(296,68,330,68)}
+   ${g(335,20,S3.map((r,i)=>r.map((v,j)=>j>i?'−∞':v)),(i,j)=>j>i?'fix':'data')}${T(398,132,'masked scores','sm')}
    ${P('M398 120 Q398 200 300 214','pen')}${T(468,170,'softmax','sm blue')}
    ${g(165,180,W,(i,j)=>j>i?'':'on')}${T(228,290-4,'weights · future = 0','sm blue')}`,'Masking step by step')})(),
 
@@ -266,55 +267,59 @@ selfcross:(()=>{const grid=(x,rows,cols,big)=>`${cols.map((c,j)=>T(x+70+j*56,40,
    ${T(530,20,'Q ↓  K →','sm muted')}`,'Self vs cross attention grids')})(),
 
 crosscalc:S('0 0 560 290',`
-  ${B(10,30,150,48,'decoder: हम दोस्त हैं','red','sm')}${B(10,190,150,48,'encoder: we are friends','pen','sm')}
-  ${A(160,54,215,54,'red')}${A(160,206,215,140,'pen')}${A(160,222,215,232,'pen')}
-  ${B(218,34,60,40,'Q','red')}${B(218,120,60,40,'K','pen')}${B(218,212,60,40,'V','pen')}
-  ${B(310,60,120,56,'QKᵀ / √dₖ\n3 × 3')}${A(278,54,308,78)}${A(278,140,308,100)}
-  ${B(450,60,100,56,'softmax','hot')}${A(430,88,448,88)}
-  ${B(380,200,170,56,'weights × V\nCE for हम, दोस्त, हैं','hot','sm')}${A(278,232,378,228)}${A(500,116,480,198)}`,'Cross-attention calculation'),
+  ${B(10,30,150,48,'decoder: हम दोस्त हैं','data','sm')}${B(10,190,150,48,'encoder: we are friends','data','sm')}
+  ${A(160,54,215,54,'pen')}${A(160,206,215,140,'pen')}${A(160,222,215,232,'pen')}
+  ${B(218,34,60,40,'Q','data')}${B(218,120,60,40,'K','data')}${B(218,212,60,40,'V','data')}
+  ${B(310,60,120,56,'QKᵀ / √dₖ\n3 × 3','fix')}${A(278,54,308,78)}${A(278,140,308,100)}
+  ${B(450,60,100,56,'softmax','fix')}${A(430,88,448,88)}
+  ${B(380,200,170,56,'weights × V\nCE for हम, दोस्त, हैं','data hot','sm')}${A(278,232,378,228)}${A(500,116,480,198)}`,'Cross-attention calculation'),
 
 decoder:S('0 0 400 540',`
-  ${B(80,488,240,40,'x = e + p  (shifted right)','hot','sm')}
-  ${A(200,488,200,462)}${B(80,422,240,40,'Masked self-attention','red','sm')}
-  ${A(200,422,200,402)}${B(80,368,240,32,'Add & LayerNorm','','sm')}
-  ${A(200,368,200,346)}${B(80,306,240,40,'Cross-attention','pen','sm')}
-  ${A(200,306,200,286)}${B(80,252,240,32,'Add & LayerNorm','','sm')}
-  ${A(200,252,200,230)}${B(80,190,240,40,'Feed-forward','','sm')}
-  ${A(200,190,200,170)}${B(80,136,240,32,'Add & LayerNorm','','sm')}
-  ${A(200,136,200,114)}${B(80,78,240,34,'Linear (vocab size)','','sm')}
-  ${A(200,78,200,58)}${B(80,20,240,36,'Softmax → next word','hot','sm')}
+  ${B(80,488,240,40,'x = e + p  (shifted right)','data hot','sm')}
+  ${A(200,488,200,462)}${B(80,422,240,40,'Masked self-attention','learn','sm')}
+  ${A(200,422,200,402)}${B(80,368,240,32,'Add & LayerNorm','learn','sm')}
+  ${A(200,368,200,346)}${B(80,306,240,40,'Cross-attention','learn','sm')}
+  ${A(200,306,200,286)}${B(80,252,240,32,'Add & LayerNorm','learn','sm')}
+  ${A(200,252,200,230)}${B(80,190,240,40,'Feed-forward','learn','sm')}
+  ${A(200,190,200,170)}${B(80,136,240,32,'Add & LayerNorm','learn','sm')}
+  ${A(200,136,200,114)}${B(80,78,240,34,'Linear (vocab size)','learn','sm')}
+  ${A(200,78,200,58)}${B(80,20,240,36,'Softmax → next word','fix','sm')}
   ${P('M380 326 L325 326','pen')}${T(372,290,'K, V\nfrom\nencoder','sm blue')}
-  ${P('M200 476 L40 476 L40 384 L76 384','red')}${P('M200 412 L40 412 L40 268 L76 268','red')}${P('M200 296 L40 296 L40 152 L76 152','red')}
-  ${T(22,440,'skip','sm red')}`,'One decoder block'),
+  ${P('M200 476 L40 476 L40 384 L76 384','fix')}${P('M200 412 L40 412 L40 268 L76 268','fix')}${P('M200 296 L40 296 L40 152 L76 152','fix')}
+  ${T(22,440,'skip','sm muted')}`,'One decoder block'),
 
 linear:S('0 0 560 290',`
-  ${V(10,30,['','','','','',''],{w:28,c:'on',label:'FFN output · 512'})}
-  ${A(180,43,220,43)}${B(222,22,320,44,'Linear · 512 → vocab size','pen','sm')}
-  ${A(380,66,380,92)}${B(260,94,240,38,'Softmax','hot','sm')}
+  ${V(10,30,['','','','','',''],{w:28,c:'data',label:'FFN output · 512'})}
+  ${A(180,43,220,43)}${B(222,22,320,44,'Linear · 512 → vocab size','learn','sm')}
+  ${A(380,66,380,92)}${B(260,94,240,38,'Softmax','fix','sm')}
   ${[['<SOS>',0],['हम',.7],['दोस्त',.2],['हैं',.1]].map(([w,p],i)=>`${TL(20,160+i*30,w,'sm')}<rect class="bar ${i===1?'':'soft'}" x="110" y="${149+i*30}" width="${Math.max(3,p*330)}" height="22" rx="4"/>${TL(120+Math.max(3,p*330),160+i*30,p.toFixed(1),'svg-mono')}`).join('')}
   ${T(470,190,'actual: हम\nloss compares\nthe two','sm red')}`,'Linear and softmax output'),
 
 scratch:(()=>{const xs=[20,155,290,425],W=[.40,.25,.20,.15];return S('0 0 560 330',`
-  ${xs.map((x,j)=>B(x,14,118,40,`v₁·v${'₁₂₃₄'[j]} = A₁${'₁₂₃₄'[j]}`,'','sm')+A(x+59,54,x+59,82)).join('')}
-  ${B(20,84,523,36,'softmax (normalization) · weights add up to 1','hot','sm')}
-  ${xs.map((x,j)=>A(x+59,120,x+59,146)+B(x,148,118,40,`S₁${'₁₂₃₄'[j]} = ${W[j].toFixed(2)}`,'pen','sm')+T(x+59,212,`× v${'₁₂₃₄'[j]}`,'sm red')+P(`M${x+59} 226 L${x+59} 246 L281 268`)).join('')}
-  ${B(176,270,210,42,'y₁ = Σ S₁ⱼ · vⱼ','hot','sm')}
-  ${T(470,300,'repeat for y₂, y₃, y₄','sm muted')}`,'Self-attention without weights')})(),
+  ${xs.map((x,j)=>B(x,14,118,40,`v₁·v${'₁₂₃₄'[j]} = A₁${'₁₂₃₄'[j]}`,'fix','sm')+A(x+59,54,x+59,82)).join('')}
+  ${B(20,84,523,36,'softmax (normalization) · weights add up to 1','fix','sm')}
+  ${xs.map((x,j)=>A(x+59,120,x+59,146)+B(x,148,118,40,`S₁${'₁₂₃₄'[j]} = ${W[j].toFixed(2)}`,'data','sm')+T(x+59,212,`× v${'₁₂₃₄'[j]}`,'sm blue')+P(`M${x+59} 226 L${x+59} 246 L281 268`)).join('')}
+  ${B(176,270,210,42,'y₁ = Σ S₁ⱼ · vⱼ','data hot','sm')}
+  ${T(470,300,'repeat for y₂, y₃, y₄','sm muted')}${T(120,320,'no learnable weights yet','sm muted')}`,'Self-attention without weights')})(),
 
 trainable:S('0 0 560 310',`
-  ${B(10,30,64,250,'v₁\nv₂\nv₃\n⋮\nvₙ')}
-  ${B(110,30,120,48,'Linear\nkeys','pen','sm')}${B(110,110,120,48,'Linear\nqueries','pen','sm')}${B(110,222,120,48,'Linear\nvalues','red','sm')}
+  ${B(10,30,64,250,'v₁\nv₂\nv₃\n⋮\nvₙ','data')}
+  ${B(110,30,120,48,'Linear\nkeys','learn','sm')}${B(110,110,120,48,'Linear\nqueries','learn','sm')}${B(110,222,120,48,'Linear\nvalues','learn','sm')}
   ${A(74,60,108,54)}${A(74,134,108,134)}${A(74,246,108,246)}
-  ${B(262,70,96,44,'MatMul','','sm')}${A(230,54,260,82)}${A(230,134,260,102)}
-  ${B(392,70,96,44,'Norm','hot','sm')}${A(358,92,390,92)}${T(375,60,'[Aᵢⱼ]','sm muted')}
-  ${B(392,222,96,48,'MatMul','','sm')}${A(440,114,440,220)}${T(470,168,'[Sᵢⱼ]','sm muted')}${A(230,246,390,246,'red')}
-  ${B(510,30,44,250,'y₁\ny₂\ny₃\n⋮\nyₙ','hot')}${A(488,246,508,246)}
+  ${B(262,70,96,44,'MatMul','fix','sm')}${A(230,54,260,82)}${A(230,134,260,102)}
+  ${B(392,70,96,44,'Norm','fix','sm')}${A(358,92,390,92)}${T(375,60,'[Aᵢⱼ]','sm muted')}
+  ${B(392,222,96,48,'MatMul','fix','sm')}${A(440,114,440,220)}${T(470,168,'[Sᵢⱼ]','sm muted')}${A(230,246,390,246,'pen')}
+  ${B(510,30,44,250,'y₁\ny₂\ny₃\n⋮\nyₙ','data hot')}${A(488,246,508,246)}
   ${T(300,296,'the three Linear layers hold W_K, W_Q, W_V','sm red')}`,'Trainable self-attention block'),
 
 kvcache:S('0 0 560 300',`
-  ${B(10,116,150,60,'Encoder\nK, V computed once','pen','sm')}${A(160,146,196,146)}
-  ${B(198,116,150,60,'KV cache\nsaved, reused','hot','sm')}
-  ${[0,1,2].map(i=>`${B(392,24+i*92,158,52,'step '+(i+1)+': new Q','red','sm')}${P(`M348 146 Q370 146 390 ${50+i*92}`,'pen')}`).join('')}
-  ${T(470,296,'Q is always recomputed','sm red')}${T(270,220,'no need to recompute\nK, V each step','sm muted')}`,'KV cache during inference')
+  ${B(10,116,150,60,'Encoder\nK, V computed once','learn','sm')}${A(160,146,196,146)}
+  ${B(198,116,150,60,'KV cache\nsaved, reused','data hot','sm')}
+  ${[0,1,2].map(i=>`${B(392,24+i*92,158,52,'step '+(i+1)+': new Q','data','sm')}${P(`M348 146 Q370 146 390 ${50+i*92}`,'pen')}`).join('')}
+  ${T(470,296,'Q is always recomputed','sm muted')}${T(270,220,'no need to recompute\nK, V each step','sm muted')}`,'KV cache during inference')
 };
+
+/* one colour code for every architecture diagram */
+const LEGEND=`<div class="legend" aria-label="Diagram colour code"><span><i class="sw learn"></i>learnable</span><span><i class="sw data"></i>data</span><span><i class="sw fix"></i>fixed, no weights</span><span><i class="sw hot"></i>focus</span></div>`;
+['infer','pipeline','embed','qkv','shapes','scratch','trainable','scaled','multihead','concat','residual','addnorm','ffn','scaling','encoder','full','mask','maskflow','crosscalc','kvcache','linear','nmt','autoreg','shifted','decoder'].forEach(k=>{DIA[k]+=LEGEND});
 

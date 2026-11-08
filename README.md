@@ -1,46 +1,65 @@
 # Learning Transformer Architecture
 
-My notes on **"Attention Is All You Need"** (Vaswani et al., 2017), turned into an interactive slide deck: hand-drawn style diagrams, Python code for each concept, and quizzes.
+An interactive slide deck that explains the Transformer from **"Attention Is All You Need"** piece by piece: hand-drawn style diagrams, Python code for each concept, and quizzes.
 
 **Live deck:** `https://<your-github-username>.github.io/learning-transformer-architecture/`
 
-## What's inside
+## Episodes
 
-| Section | Topics |
+Built as a 4-part video series, 20–30 minutes each. Jump straight to an episode with `#ep1` … `#ep4`.
+
+| Episode | Topics |
 |---|---|
-| Foundations | What an LLM is, RNN → LSTM → Transformer, why LSTMs could not scale, training vs inference |
-| Input | Tokenization, embeddings (512-d, trainable), concat vs add, positional encoding with sin/cos and a worked example |
-| Attention | Self-attention by hand, making it trainable, Q / K / V, shapes (d_k = 64), scaled dot-product, √d_k, multi-head attention and W_O |
-| Encoder block | Residual connections, Add & LayerNorm (γ, β), feed-forward network 512 → 2048 → 512 |
-| Decoder | Machine translation, autoregressive inference, shifted right, masked self-attention, cross-attention, KV cache, Linear + softmax |
-| Architecture | Full encoder–decoder picture, why 6 layers, encoder-only vs decoder-only models |
+| 01 · Why Transformers, and how text goes in | What a language model does, RNN → LSTM → Transformer, why LSTMs could not scale, tokens and embeddings, positional encoding |
+| 02 · Self-attention from scratch | Context as a weighted sum, self-attention by hand, making it trainable with Q / K / V, the attention formula, why divide by √d_k |
+| 03 · Multi-head attention and the encoder | Heads as viewpoints, ambiguous sentences, concat and W_O, residual connections, LayerNorm, feed-forward network, full encoder block |
+| 04 · The decoder and the full architecture | Translation, autoregressive inference, shifted right, masked attention, cross-attention, KV cache, Linear + softmax, encoder-only vs decoder-only LLMs |
 
-50 slides in total. The handwritten source pages are in [`notes/`](notes/).
+Each episode opens with a cover slide (topics + recap of the previous episode) and ends with a recap and an "up next" card.
 
-## Controls
+Content slides are labelled **Step 2.3** style (episode 2, step 3), so viewers can find a point again from the video.
+
+### Diagram colour code
+
+| Style | Meaning |
+|---|---|
+| Pink-red, solid | Learnable weights: W_Q, W_K, W_V, Wᴼ, embedding, FFN, LayerNorm γ and β, final Linear |
+| Blue | Data and vectors: embeddings, q, k, v, scores, contextual outputs |
+| Grey, dashed | Fixed operations with no weights: softmax, ÷ √d_k, mask, sin/cos positional encoding, skip connections |
+| Yellow | The focus of the current slide |
+
+In `diagrams.js` these are the classes `learn`, `data`, `fix` and `hot` on boxes, cells and arrows.
+
+## Presenting and recording
 
 | Key | Action |
 |---|---|
-| `←` `→` / swipe | Previous / next slide |
-| `G` | Overview of all slides |
-| `C` | Show the Python code for the slide |
+| `→` / `Space` | Reveal the next point; on the last point, go to the next slide |
+| `←` | Hide the last point; at the first, go back a slide |
+| `A` | Reveal all points on this slide |
+| `S` | Step-by-step reveal on / off |
+| `R` | Recording mode: fixed 16:9 canvas, toolbar hides until you move the mouse to the bottom |
+| `P` | Pointer (large red dot) on / off |
 | `H` | Highlighter on / off |
 | `X` | Clear highlights on the current slide |
+| `C` | Show the Python code for the slide |
+| `G` | Overview of all slides, grouped by episode |
 | `T` | Light / dark theme |
 | `F` | Fullscreen |
-| `Esc` | Close overview or turn off the highlighter |
+| `Esc` | Close overview or turn off pointer / highlighter |
 
-Link to a single slide by adding its number: `index.html#17`.
+On quiz slides, `→` first reveals the answer, then moves on. Link to a single slide by its number: `index.html#17`.
+
+**Recording tip:** press `F` for fullscreen, then `R`. At 1920 × 1080 the 16:9 canvas fills the screen exactly.
 
 ## Project structure
 
 ```
 index.html     page shell and toolbar
-style.css      notebook look, light and dark themes
+style.css      ruled-paper look, light and dark themes
 diagrams.js    SVG drawing helpers and one diagram per concept
 slides.js      all slide content (the SLIDES array)
-deck.js        engine: rendering, navigation, code view, highlighter
-notes/         photos of the original notebook pages
+deck.js        engine: rendering, episodes, step reveal, pointer, highlighter, recording mode
 ```
 
 ## Add a slide
@@ -54,7 +73,7 @@ Add one object to `SLIDES` in `slides.js`:
   code: `print("python shown when you press C")` }
 ```
 
-Other types: `quiz` (`q`, `opts`, `answer`, `explain`), `table`, `steps`, `summary`.
+Other types: `quiz` (`q`, `opts`, `answer`, `explain`), `table`, `steps`, `summary`, `episode` (cover, `ep: n`), `next` (end card, `ep: n`). Episode titles, topics and recaps live in `EPISODES` at the top of `slides.js`.
 
 ## Run locally
 
