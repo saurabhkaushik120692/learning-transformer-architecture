@@ -2,7 +2,7 @@
 
 An interactive slide deck that explains the Transformer from **"Attention Is All You Need"**, with diagrams, Python code for each concept, and quizzes.
 
-**Live deck:** `https://<your-github-username>.github.io/learning-transformer-architecture/`
+**Live deck:** [saurabhkaushik120692.github.io/learning-transformer-architecture](https://saurabhkaushik120692.github.io/learning-transformer-architecture/)
 
 ## Topics
 
